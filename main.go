@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type BBCUpdate struct {
@@ -36,19 +37,34 @@ type BBCUpdate struct {
 func main() {
 	// http://polling.bbc.co.uk/radio/realtime/bbc_1xtra.jsonp
 	fmt.Println("Track list is as follows:")
-	fmt.Println(GetBBCNowPlaying())
+	CurrentTrack := ""
+	for {
+		Current, e := GetBBCNowPlaying()
+		if e == nil {
+			if CurrentTrack != fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title) {
+				CurrentTrack = fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title)
+				fmt.Println(CurrentTrack)
+			}
+
+			time.Sleep(time.Second * time.Duration(Current.RequestMinSeconds))
+		} else {
+			time.Sleep(time.Second * 35)
+		}
+	}
+	fmt.Println()
 }
 
 var FailCount int = 0
 
-func GetBBCNowPlaying() (out BBCUpdate) {
+func GetBBCNowPlaying() (out BBCUpdate, e error) {
 	r, e := http.Get("http://polling.bbc.co.uk/radio/realtime/bbc_1xtra.jsonp")
+	Failed := fmt.Errorf("Failed to fetch data")
 	if e != nil {
 		FailCount++
 		if FailCount > 15 {
 			panic("Too many failures from the BBC.")
 		}
-		return out
+		return out, Failed
 	} else {
 		text, e := ioutil.ReadAll(r.Body)
 		if e != nil {
@@ -56,7 +72,7 @@ func GetBBCNowPlaying() (out BBCUpdate) {
 			if FailCount > 15 {
 				panic("Could not read from the BBC's HTTP stream (wat)")
 			}
-			return out
+			return out, Failed
 		}
 		Blank := BBCUpdate{}
 		e = json.Unmarshal([]byte(trimBBCoutput(string(text))), &Blank)
@@ -65,11 +81,11 @@ func GetBBCNowPlaying() (out BBCUpdate) {
 			if FailCount > 15 {
 				panic("Could not Decode the BBC's json (wat)")
 			}
-			return out
+			return out, Failed
 		}
-		return Blank
+		return Blank, e
 	}
-	return out
+	return out, Failed
 }
 
 func trimBBCoutput(input string) string {
