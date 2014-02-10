@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -32,10 +34,45 @@ type BBCUpdate struct {
 }
 
 func main() {
+	// http://polling.bbc.co.uk/radio/realtime/bbc_1xtra.jsonp
+	fmt.Println("Track list is as follows:")
+	fmt.Println(GetBBCNowPlaying())
+}
 
+var FailCount int = 0
+
+func GetBBCNowPlaying() (out BBCUpdate) {
+	r, e := http.Get("http://polling.bbc.co.uk/radio/realtime/bbc_1xtra.jsonp")
+	if e != nil {
+		FailCount++
+		if FailCount > 15 {
+			panic("Too many failures from the BBC.")
+		}
+		return out
+	} else {
+		text, e := ioutil.ReadAll(r.Body)
+		if e != nil {
+			FailCount++
+			if FailCount > 15 {
+				panic("Could not read from the BBC's HTTP stream (wat)")
+			}
+			return out
+		}
+		Blank := BBCUpdate{}
+		e = json.Unmarshal([]byte(trimBBCoutput(string(text))), &Blank)
+		if e != nil {
+			FailCount++
+			if FailCount > 15 {
+				panic("Could not Decode the BBC's json (wat)")
+			}
+			return out
+		}
+		return Blank
+	}
+	return out
 }
 
 func trimBBCoutput(input string) string {
-	t := strings.Replace(input, "realtimeCallback(", "", 1)
-	return t[:len(t)-1]
+	t := strings.Replace(input, "realtimeCallback(", "", 1) // Remove the JSONP thing from the beggining
+	return t[:len(t)-1]                                     // And trim the ) off the end.
 }
