@@ -36,6 +36,7 @@ type BBCUpdate struct {
 
 func main() {
 	// http://polling.bbc.co.uk/radio/realtime/bbc_1xtra.jsonp
+	starttime := time.Now()
 	fmt.Println("Track list is as follows:")
 	CurrentTrack := ""
 	for {
@@ -43,7 +44,7 @@ func main() {
 		if e == nil {
 			if CurrentTrack != fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title) {
 				CurrentTrack = fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title)
-				fmt.Println(CurrentTrack)
+				fmt.Printf("%d:%d - %s\n", int(time.Since(starttime).Hours()), int(time.Since(starttime).Minutes()), CurrentTrack)
 			}
 
 			time.Sleep(time.Second * time.Duration(Current.RequestMinSeconds))
