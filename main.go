@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -35,12 +36,13 @@ type BBCUpdate struct {
 }
 
 func main() {
+	b := flag.String("chan", "bbc_1xtra", "What channel to keep track of")
 	// http://polling.bbc.co.uk/radio/realtime/bbc_1xtra.jsonp
 	starttime := time.Now()
 	fmt.Println("Track list is as follows:")
 	CurrentTrack := ""
 	for {
-		Current, e := GetBBCNowPlaying()
+		Current, e := GetBBCNowPlaying(*b)
 		if e == nil {
 			if CurrentTrack != fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title) {
 				CurrentTrack = fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title)
@@ -57,8 +59,8 @@ func main() {
 
 var FailCount int = 0
 
-func GetBBCNowPlaying() (out BBCUpdate, e error) {
-	r, e := http.Get("http://polling.bbc.co.uk/radio/realtime/bbc_1xtra.jsonp")
+func GetBBCNowPlaying(url string) (out BBCUpdate, e error) {
+	r, e := http.Get(fmt.Sprintf("http://polling.bbc.co.uk/radio/realtime/%s.jsonp", url))
 	Failed := fmt.Errorf("Failed to fetch data")
 	if e != nil {
 		FailCount++
