@@ -37,7 +37,8 @@ type BBCUpdate struct {
 
 func main() {
 	b := flag.String("chan", "bbc_1xtra", "What channel to keep track of")
-	// http://polling.bbc.co.uk/radio/realtime/bbc_1xtra.jsonp
+	flag.Parse()
+
 	starttime := time.Now()
 	fmt.Println("Track list is as follows:")
 	CurrentTrack := ""
