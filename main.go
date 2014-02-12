@@ -55,7 +55,6 @@ func main() {
 			time.Sleep(time.Second * 35)
 		}
 	}
-	fmt.Println()
 }
 
 var FailCount int = 0
