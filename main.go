@@ -47,7 +47,7 @@ func main() {
 		if e == nil {
 			if CurrentTrack != fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title) {
 				CurrentTrack = fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title)
-				fmt.Printf("%d:%d - %s\n", int(time.Since(starttime).Hours()), int(time.Since(starttime).Minutes()), CurrentTrack)
+				fmt.Printf("%d:%d - %s\n", int(time.Since(starttime).Hours()), int(time.Since(starttime).Minutes()%60), CurrentTrack)
 			}
 
 			time.Sleep(time.Second * time.Duration(Current.RequestMinSeconds))
