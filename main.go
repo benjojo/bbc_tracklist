@@ -47,7 +47,7 @@ func main() {
 		if e == nil {
 			if CurrentTrack != fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title) {
 				CurrentTrack = fmt.Sprintf("%s - %s", Current.Realtime.Artist, Current.Realtime.Title)
-				fmt.Printf("%d:%d - %s\n", int(time.Since(starttime).Hours()), int(time.Since(starttime).Minutes())%60, CurrentTrack)
+				fmt.Printf("%s:%s - %s\n", BetterNumber(int(time.Since(starttime).Hours())), BetterNumber(int(time.Since(starttime).Minutes())%60), CurrentTrack)
 			}
 
 			time.Sleep(time.Second * time.Duration(Current.RequestMinSeconds))
@@ -55,6 +55,13 @@ func main() {
 			time.Sleep(time.Second * 35)
 		}
 	}
+}
+
+func BetterNumber(input int) string {
+	if input < 10 {
+		return fmt.Sprintf("0%d", input)
+	}
+	return fmt.Sprintf("%d", input)
 }
 
 var FailCount int = 0
